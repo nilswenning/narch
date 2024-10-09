@@ -472,7 +472,7 @@ EOF
 info_print "Setting root password."
 echo "root:$rootpass" | arch-chroot /mnt chpasswd
 
-# Setting user password.
+# Setting user password and creating user with wheel group
 if [[ -n "$username" ]]; then
   echo "%wheel ALL=(ALL:ALL) ALL" >/mnt/etc/sudoers.d/wheel
   info_print "Adding the user $username to the system with root privilege."
@@ -480,7 +480,7 @@ if [[ -n "$username" ]]; then
   info_print "Setting user password for $username."
   echo "$username:$userpass" | arch-chroot /mnt chpasswd
 
-  # Clone into the user's home directory.
+  # Clone Arch-Hyprland into the user's home directory
   info_print "Cloning Arch-Hyprland into $username's home directory."
   arch-chroot /mnt git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git "/home/$username/Arch-Hyprland"
 
@@ -488,6 +488,15 @@ else
   # Clone into root's home directory if no user is set.
   info_print "No user set, cloning Arch-Hyprland into root's home directory."
   arch-chroot /mnt git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git /root/Arch-Hyprland
+fi
+
+# Change permissions to allow user access to the cloned directory
+if [[ -n "$username" ]]; then
+  info_print "Changing ownership of the Arch-Hyprland directory to $username."
+  arch-chroot /mnt chown -R "$username":"$username" "/home/$username/Arch-Hyprland"
+else
+  info_print "Changing ownership of the Arch-Hyprland directory to root."
+  arch-chroot /mnt chown -R root:root /root/Arch-Hyprland
 fi
 
 # Boot backup hook.
