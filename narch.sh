@@ -392,7 +392,7 @@ info_print "Installing the base system (it may take a while)."
 pacstrap -K /mnt base "$kernel" "$microcode" linux-firmware "$kernel"-headers sbctl btrfs-progs grub grub-btrfs rsync efibootmgr snapper reflector snap-pac zram-generator sudo &>/dev/null
 
 info_print "Installing additional packages."
-pacstrap /mnt base-devel nano vi git &>/dev/null
+pacstrap /mnt base-devel nano vi git broadcom-wl-dkms &>/dev/null
 
 # Setting up the hostname.
 echo "$hostname" >/mnt/etc/hostname
