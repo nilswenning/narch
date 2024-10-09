@@ -390,26 +390,9 @@ microcode_detector
 # Pacstrap (setting up a base sytem onto the new root).
 info_print "Installing the base system (it may take a while)."
 pacstrap -K /mnt base "$kernel" "$microcode" linux-firmware "$kernel"-headers sbctl btrfs-progs grub grub-btrfs rsync efibootmgr snapper reflector snap-pac zram-generator sudo &>/dev/null
-info_print "Installing Hyprland and related packages."
-pacstrap /mnt hyprland wlroots xdg-desktop-portal-hyprland waybar rofi alacritty mako grim slurp wlogout swaybg swaylock xdg-utils lxappearance qt5-wayland qt6-wayland &>/dev/null
-info_print "Enabling ly display manager."
-pacstrap /mnt ly &>/dev/null
-systemctl enable ly --root=/mnt &>/dev/null
-info_print "Installing additional utilities (fonts, picom, file manager, etc.)."
-pacstrap /mnt noto-fonts noto-fonts-emoji ttf-font-awesome picom thunar neofetch &>/dev/null
-info_print "Setting up Hyprland configuration for user."
-arch-chroot /mnt /bin/bash -e <<EOF
-    mkdir -p /home/$username/.config/hypr
-    cat > /home/$username/.config/hypr/hyprland.conf <<HYPREOF
-    # Example Hyprland config
-    monitor=*,preferred,auto,auto
-    exec_always = waybar &
-    exec_always = mako &
-    exec_always = swaybg -i /usr/share/backgrounds/archlinux/arch-wallpaper.png -m fill &
-    exec_always = wlogout &
-HYPREOF
-    chown -R $username:$username /home/$username/.config
-EOF
+
+info_print "Installing additional packages."
+pacstrap /mnt base-devel nano vi git &>/dev/null
 
 # Setting up the hostname.
 echo "$hostname" >/mnt/etc/hostname
@@ -496,6 +479,15 @@ if [[ -n "$username" ]]; then
   arch-chroot /mnt useradd -m -G wheel -s /bin/bash "$username"
   info_print "Setting user password for $username."
   echo "$username:$userpass" | arch-chroot /mnt chpasswd
+
+  # Clone into the user's home directory.
+  info_print "Cloning Arch-Hyprland into $username's home directory."
+  arch-chroot /mnt git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git "/home/$username/Arch-Hyprland"
+
+else
+  # Clone into root's home directory if no user is set.
+  info_print "No user set, cloning Arch-Hyprland into root's home directory."
+  arch-chroot /mnt git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git /root/Arch-Hyprland
 fi
 
 # Boot backup hook.
